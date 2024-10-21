@@ -12,3 +12,16 @@ def get_data(filename: str) -> tuple[np.ndarray, np.ndarray]:
     labels = data.iloc[:, -1].values
 
     return features, labels
+
+
+def normalize_data(features: np.ndarray) -> np.ndarray:
+    """Normalizes the dataset features, scaling values to [0,1]."""
+
+    min_vals = np.min(features, axis=0)
+    max_vals = np.max(features, axis=0)
+
+    ranges = max_vals - min_vals
+
+    ranges[ranges == 0] = 1
+    normalised_features = (features - min_vals) / ranges
+    return normalised_features
