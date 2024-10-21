@@ -14,6 +14,15 @@ def get_data(filename: str) -> tuple[np.ndarray, np.ndarray]:
     return features, labels
 
 
+def ensure_numeric(features: np.ndarray) -> None:
+    """Ensures that all collumns of passed np.ndarray are all numeric."""
+
+    if not np.issubdtype(features.dtype, np.number):
+        print("Error: All features must be numeric.")
+        exit(1)
+    return None
+
+
 def normalize_data(features: np.ndarray) -> np.ndarray:
     """Normalizes the dataset features, scaling values to [0,1]."""
 
