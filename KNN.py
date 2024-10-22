@@ -1,13 +1,11 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.colors as mcolors
-import math
 from collections import Counter
 
 
 def get_data(filename: str) -> tuple[np.ndarray, np.ndarray]:
-    """Takes .csv filename and reads it. Return tuple of np.ndarrays with features and labels."""
+    """Takes .csv filename and reads it. Returns tuple of np.ndarrays with features and labels."""
 
     data = pd.read_csv(filename)
 
@@ -19,7 +17,7 @@ def get_data(filename: str) -> tuple[np.ndarray, np.ndarray]:
 
 
 def ensure_numeric(features: np.ndarray) -> None:
-    """Ensures that all collumns of passed np.ndarray are all numeric."""
+    """Ensures that all columns of passed np.ndarray are all numeric."""
 
     if not np.issubdtype(features.dtype, np.number):
         print("Error: All features must be numeric.")
@@ -29,7 +27,7 @@ def ensure_numeric(features: np.ndarray) -> None:
 
 
 def normalize_data(features: np.ndarray) -> np.ndarray:
-    """Normalizes the dataset features, scaling values to [0,1]."""
+    """Normalizes the dataset features, scaling values to [0, 1]."""
 
     min_vals = np.min(features, axis=0)
     max_vals = np.max(features, axis=0)
@@ -100,6 +98,7 @@ def calculate_accuracy(predictions: list, true_labels: np.ndarray) -> float:
 
 def visualize_classification(test_features: np.ndarray, test_labels: np.ndarray, predictions: list) -> None:
     """Visualizes test data points and compares true labels with predicted labels."""
+    # I assumed F1 and F2 are most important and didn't want to change visualization as this is not my focus.
 
     unique_classes = np.unique(test_labels)
 
