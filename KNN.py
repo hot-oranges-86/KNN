@@ -1,5 +1,7 @@
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
 import math
 from collections import Counter
 
@@ -96,6 +98,37 @@ def calculate_accuracy(predictions: list, true_labels: np.ndarray) -> float:
     return accuracy
 
 
+def visualize_classification(test_features: np.ndarray, test_labels: np.ndarray, predictions: list) -> None:
+    """Visualizes test data points and compares true labels with predicted labels."""
+
+    unique_classes = np.unique(test_labels)
+
+    color_map = plt.get_cmap('tab20')
+    colors = [color_map(i / len(unique_classes))
+              for i in range(len(unique_classes))]
+
+    for idx, cls in enumerate(unique_classes):
+
+        correct_indices = np.where(
+            (test_labels == cls) & (predictions == cls))[0]
+        correct_points = test_features[correct_indices]
+        plt.scatter(correct_points[:, 0], correct_points[:, 1], color=colors[idx],
+                    marker='o', label=f'Correct Class {cls}', alpha=0.6)
+
+        incorrect_indices = np.where(
+            (test_labels == cls) & (predictions != cls))[0]
+        incorrect_points = test_features[incorrect_indices]
+        plt.scatter(incorrect_points[:, 0], incorrect_points[:, 1],
+                    color=colors[idx], marker='x', label=f'Incorrect Class {cls}')
+
+    plt.title('Correct vs Incorrect Predictions')
+    plt.xlabel('Feature 1')
+    plt.ylabel('Feature 2')
+
+    plt.legend(loc='upper right')
+    plt.show()
+
+
 if __name__ == "__main__":
     train_features, train_labels = get_data("cesfał.csv")
     ensure_numeric(train_features)
@@ -114,3 +147,5 @@ if __name__ == "__main__":
 
     accuracy = calculate_accuracy(predictions, test_labels)
     print(f"Accuracy: {accuracy:.2f}%")
+
+    visualize_classification(test_features, test_labels, predictions)
