@@ -2,16 +2,23 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from collections import Counter
+from sklearn.decomposition import PCA
+from mpl_toolkits.mplot3d import Axes3D  # Import 3D plotting toolkit
+from sklearn.datasets import load_iris
 
 
 def get_data(filename: str) -> tuple[np.ndarray, np.ndarray]:
     """Takes .csv filename and reads it. Returns tuple of np.ndarrays with features and labels."""
 
-    data = pd.read_csv(filename)
+    # data = pd.read_csv(filename)
 
-    features = data.iloc[:, :-1].values
+    # features = data.iloc[:, :-1].values
 
-    labels = data.iloc[:, -1].values
+    # labels = data.iloc[:, -1].values
+
+    iris = load_iris()
+    features = iris.data
+    labels = iris.target
 
     return features, labels
 
@@ -24,6 +31,13 @@ def ensure_numeric(features: np.ndarray) -> None:
         exit(1)
 
     return None
+
+
+def apply_pca(features: np.ndarray, n_components: int = 3) -> np.ndarray:
+    """Reduces the dimensionality of the dataset to n_components using PCA."""
+    pca = PCA(n_components=n_components)
+    reduced_features = pca.fit_transform(features)
+    return reduced_features
 
 
 def normalize_data(features: np.ndarray) -> np.ndarray:
@@ -96,53 +110,90 @@ def calculate_accuracy(predictions: list, true_labels: np.ndarray) -> float:
     return accuracy
 
 
+'''Old visualization'''
+# def visualize_classification(test_features: np.ndarray, test_labels: np.ndarray, predictions: list) -> None:
+#     """Visualizes test data points and compares true labels with predicted labels."""
+#     # I assumed F1 and F2 are most important and didn't want to change visualization as this is not my focus.
+
+#     unique_classes = np.unique(test_labels)
+
+#     color_map = plt.get_cmap('tab20')
+#     colors = [color_map(i / len(unique_classes))
+#               for i in range(len(unique_classes))]
+
+#     for idx, cls in enumerate(unique_classes):
+
+#         correct_indices = np.where(
+#             (test_labels == cls) & (predictions == cls))[0]
+#         correct_points = test_features[correct_indices]
+#         plt.scatter(correct_points[:, 0], correct_points[:, 1], color=colors[idx],
+#                     marker='o', label=f'Correct Class {cls}', alpha=0.6)
+
+#         incorrect_indices = np.where(
+#             (test_labels == cls) & (predictions != cls))[0]
+#         incorrect_points = test_features[incorrect_indices]
+#         plt.scatter(incorrect_points[:, 0], incorrect_points[:, 1],
+#                     color=colors[idx], marker='x', label=f'Incorrect Class {cls}')
+
+#     plt.title('Correct vs Incorrect Predictions')
+#     plt.xlabel('Feature 1')
+#     plt.ylabel('Feature 2')
+
+#     plt.legend(loc='upper right')
+#     plt.show()
+
+
 def visualize_classification(test_features: np.ndarray, test_labels: np.ndarray, predictions: list) -> None:
-    """Visualizes test data points and compares true labels with predicted labels."""
-    # I assumed F1 and F2 are most important and didn't want to change visualization as this is not my focus.
-
+    """Visualizes test data points in 3D and compares true labels with predicted labels."""
     unique_classes = np.unique(test_labels)
-
     color_map = plt.get_cmap('tab20')
     colors = [color_map(i / len(unique_classes))
               for i in range(len(unique_classes))]
 
-    for idx, cls in enumerate(unique_classes):
+    fig = plt.figure(figsize=(10, 8))
+    ax = fig.add_subplot(111, projection='3d')
 
+    ax.view_init(elev=20, azim=30)
+
+    for idx, cls in enumerate(unique_classes):
         correct_indices = np.where(
             (test_labels == cls) & (predictions == cls))[0]
         correct_points = test_features[correct_indices]
-        plt.scatter(correct_points[:, 0], correct_points[:, 1], color=colors[idx],
-                    marker='o', label=f'Correct Class {cls}', alpha=0.6)
+        ax.scatter(correct_points[:, 0], correct_points[:, 1], correct_points[:, 2],
+                   color=colors[idx], marker='o', s=60, alpha=0.5, label=f'Correct Class {cls}')
 
         incorrect_indices = np.where(
             (test_labels == cls) & (predictions != cls))[0]
         incorrect_points = test_features[incorrect_indices]
-        plt.scatter(incorrect_points[:, 0], incorrect_points[:, 1],
-                    color=colors[idx], marker='x', label=f'Incorrect Class {cls}')
+        ax.scatter(incorrect_points[:, 0], incorrect_points[:, 1], incorrect_points[:, 2],
+                   color=colors[idx], marker='x', s=80, label=f'Incorrect Class {cls}', alpha=0.8)
 
-    plt.title('Correct vs Incorrect Predictions')
-    plt.xlabel('Feature 1')
-    plt.ylabel('Feature 2')
+    ax.set_title('Correct vs Incorrect Predictions (3D)', fontsize=15)
+    ax.set_xlabel('Feature 1', fontsize=12)
+    ax.set_ylabel('Feature 2', fontsize=12)
+    ax.set_zlabel('Feature 3', fontsize=12)
+    ax.xaxis.pane.fill = ax.yaxis.pane.fill = ax.zaxis.pane.fill = False
+    ax.grid(True)
 
-    plt.legend(loc='upper right')
+    plt.legend(loc='upper right', fontsize=10)
     plt.show()
 
 
 if __name__ == "__main__":
-    train_features, train_labels = get_data("cesfał.csv")
-    ensure_numeric(train_features)
+    features, labels = get_data("cesfał.csv")
+    ensure_numeric(features)
 
-    train_features = normalize_data(train_features)
+    features = apply_pca(features)
+
+    features = normalize_data(features)
 
     train_features, train_labels, test_features, test_labels = split_data(
-        train_features, train_labels)
+        features, labels)
 
     k = 3
+
     predictions = knn_classifier(
         train_features, train_labels, test_features, k)
-
-    # print(f"Predictions: {predictions}")
-    # print(f"True labels: {test_labels}")
 
     accuracy = calculate_accuracy(predictions, test_labels)
     print(f"Accuracy: {accuracy:.2f}%")
