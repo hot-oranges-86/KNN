@@ -5,9 +5,11 @@ from collections import Counter
 from sklearn.decomposition import PCA
 from mpl_toolkits.mplot3d import Axes3D  # Import 3D plotting toolkit
 from sklearn.datasets import load_iris
+from sklearn.datasets import fetch_openml
 
 
-def get_data(filename: str) -> tuple[np.ndarray, np.ndarray]:
+# def get_data(filename: str) -> tuple[np.ndarray, np.ndarray]:
+def get_data() -> tuple[np.ndarray, np.ndarray]:
     """Takes .csv filename and reads it. Returns tuple of np.ndarrays with features and labels."""
 
     # data = pd.read_csv(filename)
@@ -16,9 +18,16 @@ def get_data(filename: str) -> tuple[np.ndarray, np.ndarray]:
 
     # labels = data.iloc[:, -1].values
 
-    iris = load_iris()
-    features = iris.data
-    labels = iris.target
+    # iris = load_iris()
+    # features = iris.data
+    # labels = iris.target
+
+    mnist = fetch_openml('mnist_784', version=1, as_frame=False)
+    features = mnist.data.astype(int)
+    labels = mnist.target.astype(int)
+
+    features = features[:2000]
+    labels = labels[:2000]
 
     return features, labels
 
@@ -180,7 +189,8 @@ def visualize_classification(test_features: np.ndarray, test_labels: np.ndarray,
 
 
 if __name__ == "__main__":
-    features, labels = get_data("cesfał.csv")
+    # features, labels = get_data("cesfał.csv")
+    features, labels = get_data()
     ensure_numeric(features)
 
     features = apply_pca(features)
